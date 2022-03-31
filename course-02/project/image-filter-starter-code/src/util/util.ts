@@ -37,3 +37,14 @@ export async function deleteLocalFiles(files: Array<string>) {
     fs.unlinkSync(file);
   }
 }
+
+// validateImageURL
+// util function to validate a image URL, which is exactly the image URL or not
+// INPUTS
+//    inputURL: string - a publicly accessible url to an image file
+// RETURNS
+//    true if the URL contains image file type(jpeg, jpg, gif, png), otherwise false
+export async function isValidImageURL(inputURL: string) {
+  // use regular expression to validate image url
+  return(inputURL.match(/\.(jpeg|jpg|gif|png)$/) != null);
+}

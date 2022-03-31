@@ -22,12 +22,14 @@ import { request } from 'http';
     if (!isValidImageURL(image_url)) {
       return response.status(400).send({message: 'Invalid image URL. Please give the properly image URL.'})
     }
+
     const filteredpath = await filterImageFromURL(image_url);
+
     // send the resulting file in the response
-    response.sendFile(filteredpath);
-    //let tempArray: Array<string> = [image_url];
-    // deletes any files on the server 
-    //deleteLocalFiles(tempArray);
+    // also deletes any files on the server after all
+    response.sendFile(filteredpath, () => {
+      deleteLocalFiles([filteredpath]);
+    } )
   } );
   
   // Root Endpoint

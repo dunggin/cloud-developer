@@ -1,7 +1,7 @@
-import { apiEndpoint } from '../config'
+import Axios from 'axios';
+import { apiEndpoint } from '../config';
 import { Todo } from '../types/Todo';
 import { CreateTodoRequest } from '../types/CreateTodoRequest';
-import Axios from 'axios'
 import { UpdateTodoRequest } from '../types/UpdateTodoRequest';
 
 export async function getTodos(idToken: string): Promise<Todo[]> {

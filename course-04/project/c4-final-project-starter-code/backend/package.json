@@ -19,6 +19,7 @@
     "@types/aws-lambda": "^8.10.17",
     "@types/jsonwebtoken": "^8.3.2",
     "@types/node": "^10.14.4",
+    "@types/uuid": "^8.3.4",
     "aws-sdk": "^2.433.0",
     "serverless-apigw-binary": "^0.4.4",
     "serverless-aws-documentation": "^1.1.0",

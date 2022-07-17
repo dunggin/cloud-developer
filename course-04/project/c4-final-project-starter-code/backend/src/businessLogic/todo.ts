@@ -1,34 +1,59 @@
-import {TodoItem} from "../models/TodoItem";
-import {ToDoAccess} from "../dataLayer/toDoAccess";
+import * as uuid from 'uuid';
+
 import {CreateTodoRequest} from "../requests/CreateTodoRequest";
 import {UpdateTodoRequest} from "../requests/UpdateTodoRequest";
-import {TodoUpdate} from "../models/TodoUpdate";
+import {TodoAccess} from "../dataLayer/todoAcess";
+import { createAttachmentUrl } from '../helpers/attachmentUtils';
 
-const uuidv4 = require('uuid/v4');
-const toDoAccess = new ToDoAccess();
+const toDoAccess = new TodoAccess();
 
-export async function getAllToDo(userId: string): Promise<TodoItem[]> {
-    return toDoAccess.getAllToDo(userId);
+export async function getTodosForUser(userId: string) {
+    return await toDoAccess.getTodosForUser(userId)
 }
 
-export function createToDo(createTodoRequest: CreateTodoRequest, userId: string): Promise<TodoItem> {
-    return toDoAccess.createToDo({
+export async function createTodo(createTodoRequest: CreateTodoRequest, userId: string) {
+    const todoId = uuid.v4()
+    const createdAt = new Date().toISOString()
+
+    return await toDoAccess.createTodo({
+        todoId: todoId,
         userId: userId,
-        todoId: uuidv4(),
-        createdAt: new Date().getTime().toString(),
-        done: false,
-        createTodoRequest,
-    });
+        createdAt: createdAt,
+        name: createTodoRequest.name,
+        dueDate: createTodoRequest.dueDate,
+        done: false
+    })
 }
 
-export function updateToDo(updateTodoRequest: UpdateTodoRequest, todoId: string, userId: string): Promise<TodoUpdate> {
-    return toDoAccess.updateToDo(updateTodoRequest, todoId, userId);
+export async function updateTodo(updateTodoRequest: UpdateTodoRequest, userId: string, todoId: string) {
+    const createdAt = new Date().toISOString()
+
+    return await toDoAccess.updateTodo(
+        {
+            name: updateTodoRequest.name,
+            dueDate: updateTodoRequest.dueDate,
+            done: updateTodoRequest.done
+        }, 
+        userId, 
+        todoId
+    )
 }
 
-export function deleteToDo(todoId: string, userId: string): Promise<string> {
-    return toDoAccess.deleteToDo(todoId, userId);
+export async function updatePresignedUrlForTodoItem(userId: string, todoId: string, attachmentId: string) {
+    const todoItem = await toDoAccess.getTodoByIdForUser(userId, todoId)
+    const attachmentUrl = await createAttachmentUrl(attachmentId)
+    return await toDoAccess.updatePresignedUrlForTodoItem(
+        {
+            name: todoItem.name,
+            dueDate: todoItem.dueDate,
+            done: todoItem.done,
+            attachmentUrl: attachmentUrl
+        }, 
+        userId, 
+        todoId
+    )
 }
 
-export function generateUploadUrl(todoId: string,userId: string): Promise<string> {
-    return toDoAccess.generateUploadUrl(todoId,userId);
+export async function deleteTodo(todoId: string, userId: string) {
+    return await toDoAccess.deleteTodo(todoId, userId)
 }

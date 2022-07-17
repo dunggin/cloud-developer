@@ -1,11 +1,11 @@
-import { TodosAccess } from '../dataLayer/todosAcess'
+import { TodoAccess } from '../dataLayer/todoAcess'
 
 import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
 import * as uuid from 'uuid'
 
 import { createAttachmentUrl } from './attachmentUtils'
-const todosAcess = new TodosAccess()
+const todosAcess = new TodoAccess()
 
 export async function getTodosForUser(userId: string) {
     return await todosAcess.getTodosForUser(userId)

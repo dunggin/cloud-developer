@@ -9,7 +9,7 @@ const AWS_REGION = process.env.AWS_REGION
 const logger = createLogger('s3-todo-bucket')
 
 export async function createPresignedUrl(attachmentId: string): Promise<string> {
-    logger.info(`Getting S3 SignedUrl with attachmentId: ${attachmentId}`)
+    logger.info(`Creating S3 SignedUrl with attachmentId: ${attachmentId}`)
     const s3 = new XAWS.S3({
         signatureVersion: 'v4'
     })
@@ -17,12 +17,12 @@ export async function createPresignedUrl(attachmentId: string): Promise<string> 
     const presignedUrl = s3.getSignedUrl('putObject', {
         Bucket: s3_bucket,
         Key: attachmentId,
-        Expires: '60'  
+        Expires: 60  
     })
-    logger.info(`Get S3 SignedUrl with attachmentId: ${attachmentId} success.`)
+    logger.info(`Created S3 SignedUrl with attachmentId: ${attachmentId} success.`)
     return presignedUrl
 }
 
-export async function createAttachmentUrl(attachmentId: string): Promise<string>  {
+export function createAttachmentUrl(attachmentId: string): string {
     return `https://${s3_bucket}.s3.${AWS_REGION}.amazonaws.com/${attachmentId}`
 }

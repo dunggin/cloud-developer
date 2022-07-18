@@ -8,7 +8,7 @@ import { createAttachmentUrl } from '../helpers/attachmentUtils';
 const toDoAccess = new TodoAccess();
 
 export async function getTodosForUser(userId: string) {
-    return await toDoAccess.getTodosForUser(userId)
+    return await toDoAccess.getUserTodos(userId)
 }
 
 export async function createTodo(createTodoRequest: CreateTodoRequest, userId: string) {

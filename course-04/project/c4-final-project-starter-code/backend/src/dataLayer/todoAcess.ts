@@ -1,20 +1,22 @@
 
+import * as AWS from 'aws-sdk';
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { TodoItem } from '../models/TodoItem'
 import { TodoUpdate } from '../models/TodoUpdate'
 import {createLogger} from '../utils/logger'
 
-const XAWS = require('aws-xray-sdk');
+const AWSXRay = require('aws-xray-sdk');
+const XAWS = AWSXRay.captureAWS(AWS);
+const logger = createLogger('todos-access');
 
 export class TodoAccess {
     constructor(
         private readonly docClient: DocumentClient = new XAWS.DynamoDB.DocumentClient(),
-        private readonly todosTable = process.env.TODOS_TABLE,
-        private readonly logger = createLogger('todos-access')) {
+        private readonly todosTable = process.env.TODOS_TABLE) {
     }
 
-    async getTodosForUser(userId: string): Promise<TodoItem[]> {
-        this.logger.info(`Getting list todos for user ${userId}`)
+    async getUserTodos(userId: string): Promise<TodoItem[]> {
+        logger.info(`Getting list todos for user ${userId}`)
         const result = await this.docClient.query({
             TableName: this.todosTable,
             KeyConditionExpression: 'userId = :userId',
@@ -23,14 +25,14 @@ export class TodoAccess {
             }
         }).promise()
 
-        this.logger.info(`Get list todos for user ${userId} success.`)
+        logger.info(`Got list todos for user ${userId} success.`)
 
         const items = result.Items
         return items as TodoItem[]
     }
 
     async getTodoByIdForUser(userId: string, todoId: string): Promise<TodoItem> {
-        this.logger.info(`Getting todo item with id ${todoId} for user ${userId}.`)
+        logger.info(`Getting todo item with id ${todoId} for user ${userId}.`)
         
         const result = await this.docClient.query({
             TableName: this.todosTable,
@@ -41,21 +43,21 @@ export class TodoAccess {
             }
         }).promise()
 
-        this.logger.info(`Get todo item with id ${todoId} for user ${userId} success.`)
+        logger.info(`Got todo item with id ${todoId} for user ${userId} success.`)
 
         const items = result.Items
         return items[0] as TodoItem
     }
     
     async createTodo(todoItem: TodoItem): Promise<TodoItem> {
-        this.logger.info(`Creating new todo item with id ${todoItem.todoId} for user ${todoItem.userId}.`)
+        logger.info(`Creating new todo item with id ${todoItem.todoId} for user ${todoItem.userId}.`)
 
         await this.docClient.put({
             TableName: this.todosTable,
             Item: todoItem
         }).promise()
 
-        this.logger.info(`Creat new todo item with id ${todoItem.todoId} for user ${todoItem.userId} success.`)
+        logger.info(`Created new todo item with id ${todoItem.todoId} for user ${todoItem.userId} success.`)
 
         return todoItem
     }
@@ -64,11 +66,11 @@ export class TodoAccess {
         const currentTodoItem = this.getTodoByIdForUser(userId, todoId)
 
         if (!currentTodoItem) {
-            this.logger.error(`Not found todo item with id ${todoId} for user ${userId}.`)
+            logger.error(`Not found todo item with id ${todoId} for user ${userId}.`)
             throw new Error(`Todo item not found with id ${todoId}`)
         }
 
-        this.logger.info(`Updating data of todo item with id ${todoId} for user ${userId}.`)
+        logger.info(`Updating data of todo item with id ${todoId} for user ${userId}.`)
 
         await this.docClient.update({
             TableName: this.todosTable,
@@ -87,18 +89,18 @@ export class TodoAccess {
             }
         }).promise()
 
-        this.logger.info(`Update data of todo item with id ${todoId} for user ${userId} success.`)
+        logger.info(`Updated data of todo item with id ${todoId} for user ${userId} success.`)
     }
 
     async updatePresignedUrlForTodoItem(todoItem: TodoUpdate, userId: string, todoId: string) {
         const currentTodoItem = this.getTodoByIdForUser(userId, todoId)
         
         if (!currentTodoItem) {
-            this.logger.error(`Not found todo item with id ${todoId} for user ${userId}.`)
+            logger.error(`Not found todo item with id ${todoId} for user ${userId}.`)
             throw new Error(`Todo item not found with id ${todoId}`)
         }
 
-        this.logger.info(`Updating attachmentUrl of todo item with id ${todoId} for user ${userId}.`)
+        logger.info(`Updating attachmentUrl of todo item with id ${todoId} for user ${userId}.`)
 
         await this.docClient.update({
             TableName: this.todosTable,
@@ -107,16 +109,14 @@ export class TodoAccess {
                 todoId: todoId
             },
             UpdateExpression: 'SET attachmentUrl = :attachmentUrl',
-            ExpressionAttributeValues: {
-                ':attachmentUrl': todoItem.attachmentUrl
-            }
+            ExpressionAttributeValues: {':attachmentUrl': todoItem.attachmentUrl}
         }).promise()
 
-        this.logger.info(`Update attachmentUrl of todo item with id ${todoId} for user ${userId} success.`)
+        logger.info(`Updated attachmentUrl of todo item with id ${todoId} for user ${userId} success.`)
     }
 
     async deleteTodo(todoId: string, userId: string) {
-        this.logger.info(`Deleting todo item with id ${todoId} for user ${userId}.`)
+        logger.info(`Deleting todo item with id ${todoId} for user ${userId}.`)
 
         await this.docClient.delete({
             TableName: this.todosTable,
@@ -126,6 +126,5 @@ export class TodoAccess {
             }
         }).promise()
     }
-
    
 }
